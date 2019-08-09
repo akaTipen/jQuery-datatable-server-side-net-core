@@ -3,16 +3,11 @@
     $.fn.dataTable.moment("DD/MM/YYYY");
 
     $("#test-registers").DataTable({
-        // Design Assets
-        stateSave: true,
-        autoWidth: true,
         // ServerSide Setups
         processing: true,
         serverSide: true,
         // Paging Setups
         paging: true,
-        // Searching Setups
-        searching: { regex: true },
         // Ajax Filter
         ajax: {
             url: "/TestRegisters/LoadTable",
@@ -25,7 +20,7 @@
         },
         // Columns Setups
         columns: [
-            { data: "id" },
+            { data: "id", searchable: false, orderable: false },
             { data: "name" },
             { data: "firstSurname" },
             { data: "secondSurname" },
@@ -50,19 +45,8 @@
         ],
         // Column Definitions
         columnDefs: [
-            { targets: "no-sort", orderable: false },
-            { targets: "no-search", searchable: false },
-            {
-                targets: "trim",
-                render: function (data, type, full, meta) {
-                    if (type === "display") {
-                        data = strtrunc(data, 10);
-                    }
-
-                    return data;
-                }
-            },
             { targets: "date-type", type: "date-eu" }
-        ]
+        ],
+        order: []
     });
 });

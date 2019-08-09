@@ -36,18 +36,62 @@ namespace jQueryDatatableServerSideNetCore22.Controllers
             var orderCriteria = string.Empty;
             var orderAscendingDirection = true;
 
-            if (dtParameters.Order != null)
+            if (dtParameters.Order.Length != 0)
             {
-                // in this example we just default sort on the 1st column
                 orderCriteria = dtParameters.Columns[dtParameters.Order[0].Column].Data;
                 orderAscendingDirection = dtParameters.Order[0].Dir.ToString().ToLower() == "asc";
             }
-            else
-            {
-                // if we have an empty search then just order the results by Id ascending
-                orderCriteria = "Id";
-                orderAscendingDirection = true;
-            }
+
+            #region Example SQL
+            //USE[NAME_DATABASE]
+
+            //SET ANSI_NULLS ON
+            //GO
+            //SET QUOTED_IDENTIFIER ON
+            //GO
+
+            //CREATE PROCEDURE List
+            //  @OrderBy AS NVARCHAR(100),
+            //	@OrderDirection AS NVARCHAR(4),
+            //	@SearchBy AS NVARCHAR(100) = '',
+            //	@Start AS INT,
+            //	@Length AS INT
+
+            //AS
+            //BEGIN
+            //  SET NOCOUNT ON;
+
+            //  DECLARE @sql AS NVARCHAR(MAX);
+
+            //  SET @sql = 'SELECT *
+            //    FROM[Department]
+            //    WHERE Name LIKE '' % '+ @SearchBy +' % '' OR
+            //      ALIAS LIKE '' % '+ @SearchBy +' % '' OR
+            //      Rubrik LIKE '' % '+ @SearchBy +' % ''
+            //    ORDER BY '+ @OrderBy +' '+ @OrderDirection +'
+            //    OFFSET('+ CONVERT(varchar(5), @Start) +') ROWS FETCH NEXT(' + CONVERT(varchar(5), @Length) + ') ROWS ONLY'
+
+            //execute(@sql)
+            //END
+            //GO
+
+            //***EXAMPLE DATA***
+            //USE[NAME_DATABASE]
+            //GO
+
+            //DECLARE @return_value int
+
+            //EXEC  @return_value = [dbo].[List]
+            //      @OrderBy = 'Id',
+            //		@OrderDirection = 'desc',
+            //		@SearchBy = '',
+            //		@Start = 0,
+            //		@Length = 10
+
+            //SELECT  'Return Value' = @return_value
+
+            //GO
+            #endregion
 
             var result = await _context.TestRegisters.ToListAsync();
 
@@ -64,7 +108,8 @@ namespace jQueryDatatableServerSideNetCore22.Controllers
                     .ToList();
             }
 
-            result = orderAscendingDirection ? result.AsQueryable().OrderByDynamic(orderCriteria, LinqExtensions.Order.Asc).ToList() : result.AsQueryable().OrderByDynamic(orderCriteria, LinqExtensions.Order.Desc).ToList();
+            if (dtParameters.Order.Length != 0)
+                result = orderAscendingDirection ? result.AsQueryable().OrderByDynamic(orderCriteria, LinqExtensions.Order.Asc).ToList() : result.AsQueryable().OrderByDynamic(orderCriteria, LinqExtensions.Order.Desc).ToList();
 
             // now just get the count of items (without the skip and take) - eg how many could be returned with filtering
             var filteredResultsCount = result.Count();
